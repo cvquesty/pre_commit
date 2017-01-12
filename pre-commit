@@ -1,0 +1,131 @@
+#!/bin/bash
+# pre-commit git hook to check the validity of a puppet manifest
+#
+# Prerequisites:
+#   gem install puppet-lint puppet
+#
+# Install:
+#  /path/to/repo/.git/hooks/pre-comit
+#
+# Make sure puppet-lint is already installed and in your path:
+# gem install puppet-lint
+#
+# Make sure metadata-json-lint is also installed and in your path:
+# gem install metadata-json-lint
+#
+# Authors:
+#
+#  Jerald Sheets -- Based on the work of
+#  Ronny Roethof &
+#  Mattias Geniar <m@ttias.be>
+
+# Setting up Colors to make the output more Dynamic
+  # Reset
+  Color_Off='\033[0m'       # Text Reset
+
+  # Regular Colors
+  Black='\033[0;30m'        # Black
+  Red='\033[0;31m'          # Red
+  Green='\033[0;32m'        # Green
+  Yellow='\033[0;33m'       # Yellow
+  Blue='\033[0;34m'         # Blue
+  Purple='\033[0;35m'       # Purple
+  Cyan='\033[0;36m'         # Cyan
+  White='\033[0;37m'        # White
+
+# Bold High Intensity
+  BBlack='\033[1;90m'      # Black
+  RRed='\033[1;91m'        # Red
+  GGreen='\033[1;92m'      # Green
+  YYellow='\033[1;93m'     # Yellow
+  IBlue='\033[1;94m'       # Blue
+  PPurple='\033[1;95m'     # Purple
+  CCyan='\033[1;96m'       # Cyan
+  WWhite='\033[1;97m'      # White
+
+printf "${GGreen}### Checking puppet syntax, for science! ###${Color_Off}\n"
+for FILE in `git diff --name-only --cached | grep -E '\.(pp)'`
+do
+    # Only check new/modified Files that end in *.pp extension
+    if [[ -f ${FILE} && ${FILE} == *.pp ]]
+    then
+        puppet-lint \
+            --no-80chars-check \
+            --no-autoloader_layout-check \
+            --no-nested_classes_or_defines-check \
+            --with-filename ${FILE}
+
+        # Set us up to bail if we receive any syntax errors
+        if [[ $? -ne 0 ]]
+        then
+            syntax_is_bad=1
+        else
+            printf "${Yellow}${FILE} looks good!${Color_Off}\n"
+        fi
+    fi
+done
+echo ""
+
+printf "${GGreen}### Checking if puppet manifests are valid ###${Color_Off}\n"
+# validating the whole manifest takes too long. uncomment this
+# if you want to test the whole shebang.
+# for FILE in `find . -name "*.pp"`
+# for FILE in `git diff --name-only --cached | grep -E '\.(pp|erb)'`
+for FILE in `git diff --name-only --cached | grep -E '\.(pp)'`
+do
+    if [[ -f ${FILE} && ${FILE} == *.pp ]]
+    then
+        puppet parser validate ${FILE}
+        if [[ $? -ne 0 ]]
+        then
+            printf "${RRed}ERROR: puppet parser failed at: ${FILE}${Color_Off}\n"
+            syntax_is_bad=1
+        else
+            printf "${GGreen}OK:${Color_Off} ${FILE} looks valid!!\n"
+        fi
+    fi
+done
+echo ""
+
+printf "${GGreen}### Checking if ruby template syntax is valid ###${Color_Off}\n"
+for FILE in `git diff --name-only --cached | grep -E '\.(erb)'`
+do
+    if [[ -f ${FILE} ]]
+    then
+        erb -P -x -T '-' ${FILE} | ruby -c
+        if [[ $? -ne 0 ]]
+        then
+            printf "${RRed}ERROR:i${Color_Off} ruby template parser failed at: ${FILE}\n"
+            syntax_is_bad=1
+        else
+            printf "${Ggreen}OK:${Color_Off} ${FILE} looks like a valid ruby template.\n"
+        fi
+    fi
+done
+echo ""
+
+  printf "${GGreen}### Checking metadata.json syntax and style. ###${Color_Off}\n"
+  for FILE in `git diff --name-only --cached |grep -E 'metadata.json'`
+    do
+      if [[ -f ${FILE} ]]
+        then
+          metadata-json-lint ${FILE}
+          # Set us up to bail if we receive any syntax errors
+          if [[ $? -ne 0 ]]
+          then
+              syntax_is_bad=1
+          else
+              printf "${Yellow}${FILE} looks good!${Color_Off}\n"
+          fi
+      fi
+  done
+  echo ""
+
+if [[ $syntax_is_bad -eq 1 ]]
+then
+    printf "${RRed}FATAL: ${Red}Syntax is bad. See above errors${Color_Off}\n"
+    printf "${Red}Bailing${Color_Off}\n"
+    exit 1
+else
+    printf "${GGreen}Everything looks good.${Color_Off}\n"
+fi
