@@ -21,6 +21,12 @@ Place the pre_commit hook into a project's .git/hooks directory.  When you issue
 
 You may also place the pre_commit hook itself in your system's Git "templates" directory.  This will automatically copy the pre_commit hook to any new project each time you run "git init" into the appropriate hooks directory.
 
+***For this hook to work properly, you have to have the following installed:***
+
+puppet-lint
+metadata-json-lint
+ruby
+
 ##Credits
 
 This hook is a compliation of multiple people's assistance and work, and I do not have everyone's information, only that of those mentioned inside the hook itself.  Please do feel free to contribute as much as you like.
