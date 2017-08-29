@@ -23,9 +23,9 @@ You may also place the pre_commit hook itself in your system's Git "templates" d
 
 ***For this hook to work properly, you have to have the following installed:***
 
-puppet-lint
-metadata-json-lint
-ruby
+puppet-lint<br>
+metadata-json-lint<br>
+ruby<br>
 
 ##Credits
 
