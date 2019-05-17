@@ -1,14 +1,13 @@
-##Git pre-commit hook for Puppet Parsing
+##Git pre-commit hook for Puppet Parsing##
 
-This pre-commit hook assumes you have 
+This pre-commit hook assumes you have:
 
 puppet-lint
 metadata-json-lint
 Ruby
-
 and a Puppet agent on the system in which you wish to use it.
 
-##Installation
+##Installation##
 
 Place the pre_commit hook into a project's .git/hooks directory.  When you issue a commt statement, the pre-commit hook will be fired against your code and will process:
 
@@ -27,9 +26,9 @@ puppet-lint<br>
 metadata-json-lint<br>
 ruby<br>
 
-##Credits
+##Credits##
 
 This hook is a compliation of multiple people's assistance and work, and I do not have everyone's information, only that of those mentioned inside the hook itself.  Please do feel free to contribute as much as you like.
 
-##License
+##License##
 This hook is under GPLv2 license.  Use it how you wish. Please distribute my info with it.  Please pay it forward.
