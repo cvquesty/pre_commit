@@ -121,6 +121,23 @@ echo ""
   done
   echo ""
 
+  printf "${GGreen}### Checking yaml for validity and weirdnesses. ###${Color_Off}\n"
+  for FILE in `git diff --name-only --cached | grep -E '\.(yaml)'`
+    do
+      if [[ -f ${FILE} ]]
+        then
+          yamllint ${FILE}
+          # Set us up to bail if we receive any syntax errors
+          if [[ $? -ne 0 ]]
+          then
+              syntax_is_bad=1
+          else
+              printf "${Yellow}${FILE} looks good!${Color_Off}\n"
+          fi
+      fi
+  done
+  echo ""
+
 if [[ $syntax_is_bad -eq 1 ]]
 then
     printf "${RRed}FATAL: ${Red}Syntax is bad. See above errors${Color_Off}\n"
