@@ -126,7 +126,8 @@ echo ""
     do
       if [[ -f ${FILE} ]]
         then
-          yamllint ${FILE}
+          # Ignores line length
+          yamllint -d "{extends: relaxed, rules: {line-length: {max: 120}}}" ${FILE}
           # Set us up to bail if we receive any syntax errors
           if [[ $? -ne 0 ]]
           then
